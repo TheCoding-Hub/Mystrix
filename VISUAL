@@ -1,0 +1,645 @@
+-- Loading Screen | Mystryx
+-- Dark Red Themed Terminal Loading with Hexagonal Design + Floating Orbs
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Clean up existing screens
+pcall(function()
+    if game:GetService("CoreGui"):FindFirstChild("MystryxLoading") then
+        game:GetService("CoreGui"):FindFirstChild("MystryxLoading"):Destroy()
+    end
+end)
+if LocalPlayer.PlayerGui:FindFirstChild("MystryxLoading") then
+    LocalPlayer.PlayerGui:FindFirstChild("MystryxLoading"):Destroy()
+end
+
+-- ========== SCREENGUI ==========
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MystrixLoading"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.DisplayOrder = 999999
+
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = game:GetService("CoreGui")
+elseif gethui then
+    ScreenGui.Parent = gethui()
+elseif get_hidden_gui then
+    ScreenGui.Parent = get_hidden_gui()
+else
+    ScreenGui.Parent = game:GetService("CoreGui")
+end
+
+-- ========== BACKGROUND ==========
+local Background = Instance.new("Frame")
+Background.Size = UDim2.new(1, 0, 1, 0)
+Background.BackgroundColor3 = Color3.fromRGB(8, 0, 0)
+Background.BorderSizePixel = 0
+Background.ZIndex = 1
+Background.Parent = ScreenGui
+
+-- Dark gradient overlay
+local GradientOverlay = Instance.new("Frame")
+GradientOverlay.Size = UDim2.new(1, 0, 1, 0)
+GradientOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+GradientOverlay.BackgroundTransparency = 0.6
+GradientOverlay.BorderSizePixel = 0
+GradientOverlay.ZIndex = 1
+GradientOverlay.Parent = Background
+
+-- ========== FLOATING ORBS (3 BOLA MELAYANG) ==========
+local OrbsContainer = Instance.new("Frame")
+OrbsContainer.Size = UDim2.new(1, 0, 1, 0)
+OrbsContainer.BackgroundTransparency = 1
+OrbsContainer.ZIndex = 2
+OrbsContainer.Parent = Background
+
+local orbs = {}
+
+-- Function to create a floating orb
+local function createOrb(size, startX, startY, colorIntensity)
+    local orb = Instance.new("Frame")
+    orb.Size = UDim2.new(0, size, 0, size)
+    orb.Position = UDim2.new(0, startX, 0, startY)
+    orb.BackgroundColor3 = Color3.fromRGB(255, colorIntensity, colorIntensity)
+    orb.BackgroundTransparency = 0.4
+    orb.BorderSizePixel = 0
+    orb.ZIndex = 2
+    orb.Parent = OrbsContainer
+    
+    -- Add corner for round shape
+    local corner = Instance.new("UICorner", orb)
+    corner.CornerRadius = UDim.new(1, 0)
+    
+    -- Add inner glow effect
+    local glow = Instance.new("Frame")
+    glow.Size = UDim2.new(0.7, 0, 0.7, 0)
+    glow.Position = UDim2.new(0.15, 0, 0.15, 0)
+    glow.BackgroundColor3 = Color3.fromRGB(255, colorIntensity + 50, colorIntensity + 50)
+    glow.BackgroundTransparency = 0.5
+    glow.BorderSizePixel = 0
+    glow.ZIndex = 3
+    glow.Parent = orb
+    Instance.new("UICorner", glow).CornerRadius = UDim.new(1, 0)
+    
+    return orb
+end
+
+-- Create 3 orbs with different sizes and starting positions
+local orbData = {
+    {size = 120, startX = 150, startY = 200, intensity = 80, speedX = 0.4, speedY = 0.3, rangeX = 300, rangeY = 200},
+    {size = 85, startX = 1200, startY = 500, intensity = 100, speedX = 0.5, speedY = 0.4, rangeX = 350, rangeY = 250},
+    {size = 200, startX = 800, startY = 700, intensity = 60, speedX = 0.3, speedY = 0.35, rangeX = 400, rangeY = 300}
+}
+
+for i, data in ipairs(orbData) do
+    local orb = createOrb(data.size, data.startX, data.startY, data.intensity)
+    table.insert(orbs, {
+        obj = orb,
+        x = data.startX,
+        y = data.startY,
+        startX = data.startX,
+        startY = data.startY,
+        size = data.size,
+        speedX = data.speedX,
+        speedY = data.speedY,
+        rangeX = data.rangeX,
+        rangeY = data.rangeY,
+        angleX = math.random(0, 360),
+        angleY = math.random(0, 360),
+        pulseTime = math.random(0, 100) / 100
+    })
+end
+
+-- Animate floating orbs (melayang pelan)
+task.spawn(function()
+    local time = 0
+    while ScreenGui.Parent do
+        time = time + 0.016
+        for _, orb in ipairs(orbs) do
+            -- Calculate floating movement using sine waves (halus dan melayang)
+            orb.angleX = orb.angleX + orb.speedX * 0.02
+            orb.angleY = orb.angleY + orb.speedY * 0.02
+            
+            local offsetX = math.sin(orb.angleX) * orb.rangeX * 0.5
+            local offsetY = math.cos(orb.angleY) * orb.rangeY * 0.5
+            
+            local newX = orb.startX + offsetX
+            local newY = orb.startY + offsetY
+            
+            orb.x = newX
+            orb.y = newY
+            orb.obj.Position = UDim2.new(0, orb.x, 0, orb.y)
+            
+            -- Pulsing effect (berdenyut pelan)
+            local pulse = (math.sin(time * 1.5 + orb.pulseTime * 10) + 1) / 2
+            local transparency = 0.3 + (pulse * 0.3)
+            local intensity = 80 + (pulse * 100)
+            orb.obj.BackgroundColor3 = Color3.fromRGB(255, intensity, intensity)
+            orb.obj.BackgroundTransparency = transparency
+            
+            -- Inner glow juga berdenyut
+            local innerGlow = orb.obj:FindFirstChildWhichIsA("Frame")
+            if innerGlow then
+                innerGlow.BackgroundColor3 = Color3.fromRGB(255, intensity + 50, intensity + 50)
+                innerGlow.BackgroundTransparency = 0.3 + (pulse * 0.3)
+            end
+            
+            -- Scale effect (mengembang sedikit)
+            local scale = 1 + math.sin(time * 1.2 + orb.pulseTime * 8) * 0.03
+            orb.obj.Size = UDim2.new(0, orb.size * scale, 0, orb.size * scale)
+        end
+        task.wait(0.033)
+    end
+end)
+
+-- ========== HEXAGON GRID EFFECT ==========
+local HexGrid = Instance.new("Frame")
+HexGrid.Size = UDim2.new(1, 0, 1, 0)
+HexGrid.BackgroundTransparency = 1
+HexGrid.ZIndex = 2
+HexGrid.Parent = Background
+
+local function createHexagon(x, y, size)
+    local hex = Instance.new("Frame")
+    hex.Size = UDim2.new(0, size, 0, size)
+    hex.Position = UDim2.new(0, x, 0, y)
+    hex.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    hex.BackgroundTransparency = 0.85
+    hex.BorderSizePixel = 1
+    hex.BorderColor3 = Color3.fromRGB(255, 70, 70)
+    hex.ZIndex = 2
+    hex.Parent = HexGrid
+    
+    local corner = Instance.new("UICorner", hex)
+    corner.CornerRadius = UDim.new(0, size * 0.2)
+    
+    return hex
+end
+
+-- Create floating hexagons
+local hexagons = {}
+local hexCount = 35
+for i = 1, hexCount do
+    local x = math.random(0, 2000)
+    local y = math.random(0, 1200)
+    local size = math.random(25, 55)
+    local hex = createHexagon(x, y, size)
+    hex.BackgroundTransparency = math.random(70, 95) / 100
+    table.insert(hexagons, {
+        obj = hex,
+        x = x,
+        y = y,
+        speedX = (math.random(-30, 30)) / 100,
+        speedY = (math.random(-20, 20)) / 100,
+        size = size,
+        pulse = math.random(0, 100) / 100
+    })
+end
+
+-- Animate floating hexagons
+task.spawn(function()
+    local time = 0
+    while ScreenGui.Parent do
+        time = time + 0.016
+        for _, hex in ipairs(hexagons) do
+            local newX = hex.x + hex.speedX
+            local newY = hex.y + hex.speedY
+            
+            if newX > 2000 then newX = -100 end
+            if newX < -100 then newX = 2000 end
+            if newY > 1200 then newY = -100 end
+            if newY < -100 then newY = 1200 end
+            
+            hex.x = newX
+            hex.y = newY
+            hex.obj.Position = UDim2.new(0, hex.x, 0, hex.y)
+            
+            -- Pulsing effect
+            local pulse = (math.sin(time * 3 + hex.pulse * 10) + 1) / 2
+            local transparency = 0.7 + (pulse * 0.2)
+            hex.obj.BackgroundTransparency = transparency
+            hex.obj.BorderColor3 = Color3.fromRGB(255, 70 + pulse * 50, 70 + pulse * 50)
+            hex.obj.BackgroundColor3 = Color3.fromRGB(255, 70 + pulse * 30, 70 + pulse * 30)
+        end
+        task.wait(0.033)
+    end
+end)
+
+-- ========== CIRCULAR PROGRESS RING ==========
+local CenterRing = Instance.new("Frame")
+CenterRing.Size = UDim2.new(0, 220, 0, 220)
+CenterRing.Position = UDim2.new(0.5, -110, 0.5, -110)
+CenterRing.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+CenterRing.BackgroundTransparency = 0.3
+CenterRing.BorderSizePixel = 3
+CenterRing.BorderColor3 = Color3.fromRGB(255, 60, 60)
+CenterRing.ZIndex = 3
+CenterRing.Parent = Background
+
+local RingCorner = Instance.new("UICorner", CenterRing)
+RingCorner.CornerRadius = UDim.new(1, 0)
+
+local RingGlow = Instance.new("Frame")
+RingGlow.Size = UDim2.new(1, 10, 1, 10)
+RingGlow.Position = UDim2.new(0.5, -5, 0.5, -5)
+RingGlow.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+RingGlow.BackgroundTransparency = 0.7
+RingGlow.BorderSizePixel = 0
+RingGlow.ZIndex = 2
+RingGlow.Parent = CenterRing
+Instance.new("UICorner", RingGlow).CornerRadius = UDim.new(1, 0)
+
+-- Inner content
+local InnerContent = Instance.new("Frame")
+InnerContent.Size = UDim2.new(0.85, 0, 0.85, 0)
+InnerContent.Position = UDim2.new(0.075, 0, 0.075, 0)
+InnerContent.BackgroundColor3 = Color3.fromRGB(10, 0, 0)
+InnerContent.BackgroundTransparency = 0.2
+InnerContent.BorderSizePixel = 2
+InnerContent.BorderColor3 = Color3.fromRGB(255, 70, 70)
+InnerContent.ZIndex = 4
+InnerContent.Parent = CenterRing
+Instance.new("UICorner", InnerContent).CornerRadius = UDim.new(1, 0)
+
+-- Percentage text in center
+local PercentText = Instance.new("TextLabel")
+PercentText.Size = UDim2.new(1, 0, 0.4, 0)
+PercentText.Position = UDim2.new(0, 0, 0.3, 0)
+PercentText.BackgroundTransparency = 1
+PercentText.Text = "0%"
+PercentText.TextColor3 = Color3.fromRGB(255, 80, 80)
+PercentText.TextSize = 28
+PercentText.Font = Enum.Font.GothamBold
+PercentText.ZIndex = 5
+PercentText.Parent = InnerContent
+
+local StatusText = Instance.new("TextLabel")
+StatusText.Size = UDim2.new(1, 0, 0.25, 0)
+StatusText.Position = UDim2.new(0, 0, 0.65, 0)
+StatusText.BackgroundTransparency = 1
+StatusText.Text = "INITIALIZING"
+StatusText.TextColor3 = Color3.fromRGB(255, 70, 70)
+StatusText.TextSize = 10
+StatusText.Font = Enum.Font.Gotham
+StatusText.ZIndex = 5
+StatusText.Parent = InnerContent
+
+-- ========== SIDEBAR TERMINAL ==========
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 320, 1, -40)
+Sidebar.Position = UDim2.new(1, -340, 0, 20)
+Sidebar.BackgroundColor3 = Color3.fromRGB(15, 0, 0)
+Sidebar.BackgroundTransparency = 0.15
+Sidebar.BorderSizePixel = 2
+Sidebar.BorderColor3 = Color3.fromRGB(255, 60, 60)
+Sidebar.ZIndex = 3
+Sidebar.Parent = Background
+
+local SidebarCorner = Instance.new("UICorner", Sidebar)
+SidebarCorner.CornerRadius = UDim.new(0, 12)
+
+local SidebarTitle = Instance.new("TextLabel")
+SidebarTitle.Size = UDim2.new(1, -20, 0, 32)
+SidebarTitle.Position = UDim2.new(0, 10, 0, 10)
+SidebarTitle.BackgroundTransparency = 1
+SidebarTitle.Text = "> MYSTRYX TERMINAL v2.4.7"
+SidebarTitle.TextColor3 = Color3.fromRGB(255, 80, 80)
+SidebarTitle.TextSize = 12
+SidebarTitle.Font = Enum.Font.GothamBold
+SidebarTitle.TextXAlignment = Enum.TextXAlignment.Left
+SidebarTitle.ZIndex = 4
+SidebarTitle.Parent = Sidebar
+
+-- ========== BYPASS TEXT (Kiri Terminal) ==========
+local BypassText = Instance.new("TextLabel")
+BypassText.Size = UDim2.new(0, 120, 0, 32)
+BypassText.Position = UDim2.new(0, 15, 0, 45)
+BypassText.BackgroundTransparency = 1
+BypassText.Text = "> BYPASS MODE"
+BypassText.TextColor3 = Color3.fromRGB(255, 70, 70)
+BypassText.TextSize = 11
+BypassText.Font = Enum.Font.GothamBold
+BypassText.TextXAlignment = Enum.TextXAlignment.Left
+BypassText.ZIndex = 4
+BypassText.Parent = Sidebar
+
+-- ========== PROCESSING TEXT (Kanan Terminal) ==========
+local ProcessingText = Instance.new("TextLabel")
+ProcessingText.Size = UDim2.new(0, 150, 0, 32)
+ProcessingText.Position = UDim2.new(1, -165, 0, 45)
+ProcessingText.BackgroundTransparency = 1
+ProcessingText.Text = "PROCESSING >"
+ProcessingText.TextColor3 = Color3.fromRGB(255, 70, 70)
+ProcessingText.TextSize = 11
+ProcessingText.Font = Enum.Font.GothamBold
+ProcessingText.TextXAlignment = Enum.TextXAlignment.Right
+ProcessingText.ZIndex = 4
+ProcessingText.Parent = Sidebar
+
+-- Blinking effect for BYPASS
+task.spawn(function()
+    local blink = false
+    while ScreenGui.Parent do
+        blink = not blink
+        if blink then
+            BypassText.Text = "> BYPASS MODE [ACTIVE]"
+            BypassText.TextColor3 = Color3.fromRGB(255, 100, 100)
+        else
+            BypassText.Text = "> BYPASS MODE"
+            BypassText.TextColor3 = Color3.fromRGB(180, 50, 50)
+        end
+        task.wait(0.6)
+    end
+end)
+
+-- Animated dots for PROCESSING
+task.spawn(function()
+    local dot = 0
+    while ScreenGui.Parent do
+        dot = dot + 1
+        if dot > 3 then dot = 1 end
+        ProcessingText.Text = "PROCESSING" .. string.rep(".", dot) .. " >"
+        task.wait(0.5)
+    end
+end)
+
+local LogContainer = Instance.new("Frame")
+LogContainer.Size = UDim2.new(1, -20, 1, -90)
+LogContainer.Position = UDim2.new(0, 10, 0, 82)
+LogContainer.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+LogContainer.BackgroundTransparency = 0.5
+LogContainer.BorderSizePixel = 0
+LogContainer.ZIndex = 3
+LogContainer.ClipsDescendants = true
+LogContainer.Parent = Sidebar
+
+local LogCorner = Instance.new("UICorner", LogContainer)
+LogCorner.CornerRadius = UDim.new(0, 6)
+
+local LogLayout = Instance.new("UIListLayout", LogContainer)
+LogLayout.SortOrder = Enum.SortOrder.LayoutOrder
+LogLayout.Padding = UDim.new(0, 2)
+
+-- ========== LEFT PANEL ==========
+local LeftPanel = Instance.new("Frame")
+LeftPanel.Size = UDim2.new(0, 280, 1, -40)
+LeftPanel.Position = UDim2.new(0, 20, 0, 20)
+LeftPanel.BackgroundColor3 = Color3.fromRGB(15, 0, 0)
+LeftPanel.BackgroundTransparency = 0.2
+LeftPanel.BorderSizePixel = 2
+LeftPanel.BorderColor3 = Color3.fromRGB(255, 60, 60)
+LeftPanel.ZIndex = 3
+LeftPanel.Parent = Background
+
+local LeftCorner = Instance.new("UICorner", LeftPanel)
+LeftCorner.CornerRadius = UDim.new(0, 12)
+
+-- Mystryx Logo
+local LogoText = Instance.new("TextLabel")
+LogoText.Size = UDim2.new(1, 0, 0, 50)
+LogoText.Position = UDim2.new(0, 0, 0, 20)
+LogoText.BackgroundTransparency = 1
+LogoText.Text = "MYSTRIX"
+LogoText.TextColor3 = Color3.fromRGB(255, 80, 80)
+LogoText.TextSize = 28
+LogoText.Font = Enum.Font.GothamBlack
+LogoText.ZIndex = 4
+LogoText.Parent = LeftPanel
+
+local LogoSub = Instance.new("TextLabel")
+LogoSub.Size = UDim2.new(1, 0, 0, 20)
+LogoSub.Position = UDim2.new(0, 0, 0, 70)
+LogoSub.BackgroundTransparency = 1
+LogoSub.Text = "BEST ETFB SCRIPT"
+LogoSub.TextColor3 = Color3.fromRGB(255, 70, 70)
+LogoSub.TextSize = 9
+LogoSub.Font = Enum.Font.Gotham
+LogoSub.ZIndex = 4
+LogoSub.Parent = LeftPanel
+
+local Divider = Instance.new("Frame")
+Divider.Size = UDim2.new(0.85, 0, 0, 2)
+Divider.Position = UDim2.new(0.075, 0, 0, 100)
+Divider.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+Divider.BackgroundTransparency = 0.5
+Divider.BorderSizePixel = 0
+Divider.ZIndex = 4
+Divider.Parent = LeftPanel
+
+-- System stats
+local StatsFrame = Instance.new("Frame")
+StatsFrame.Size = UDim2.new(1, -30, 0, 80)
+StatsFrame.Position = UDim2.new(0, 15, 0, 115)
+StatsFrame.BackgroundTransparency = 1
+StatsFrame.ZIndex = 4
+StatsFrame.Parent = LeftPanel
+
+local function addStat(parent, y, label, value)
+    local labelText = Instance.new("TextLabel")
+    labelText.Size = UDim2.new(0.5, -5, 0, 20)
+    labelText.Position = UDim2.new(0, 0, 0, y)
+    labelText.BackgroundTransparency = 1
+    labelText.Text = label
+    labelText.TextColor3 = Color3.fromRGB(200, 60, 60)
+    labelText.TextSize = 10
+    labelText.Font = Enum.Font.Gotham
+    labelText.TextXAlignment = Enum.TextXAlignment.Left
+    labelText.ZIndex = 4
+    labelText.Parent = parent
+    
+    local valueText = Instance.new("TextLabel")
+    valueText.Size = UDim2.new(0.5, -5, 0, 20)
+    valueText.Position = UDim2.new(0.5, 5, 0, y)
+    valueText.BackgroundTransparency = 1
+    valueText.Text = value
+    valueText.TextColor3 = Color3.fromRGB(255, 90, 90)
+    valueText.TextSize = 10
+    valueText.Font = Enum.Font.GothamBold
+    valueText.TextXAlignment = Enum.TextXAlignment.Right
+    valueText.ZIndex = 4
+    valueText.Parent = parent
+    
+    return valueText
+end
+
+local coreVersion = addStat(StatsFrame, 0, "> CORE ENGINE", "v2.4.7")
+local encLayer = addStat(StatsFrame, 22, "> ENCRYPTION", "AES-256")
+local protocol = addStat(StatsFrame, 44, "> PROTOCOL", "SECURE v3")
+local activeNodes = addStat(StatsFrame, 66, "> ACTIVE NODES", "12/12")
+
+-- Update time in stats
+local timeStat = addStat(StatsFrame, 88, "> SYSTEM TIME", os.date("%H:%M:%S"))
+task.spawn(function()
+    while ScreenGui.Parent do
+        timeStat.Text = os.date("%H:%M:%S")
+        task.wait(1)
+    end
+end)
+
+-- ========== LOG MESSAGES (BYPASS & PROCESSING STYLE) ==========
+local logLines = {}
+local logIndex = 0
+
+-- 5 logs with bypass/processing theme that loop
+local logMessages = {
+    {txt = "[BYPASS] > Bypassing security layer 1...",        color = Color3.fromRGB(255, 80, 80)},
+    {txt = "[BYPASS] > Security layer 1 bypassed [SUCCESS]",  color = Color3.fromRGB(255, 120, 120)},
+    {txt = "[PROCESS] > Processing authentication tokens...",  color = Color3.fromRGB(255, 70, 70)},
+    {txt = "[PROCESS] > Tokens validated [SUCCESS]",          color = Color3.fromRGB(255, 120, 120)},
+    {txt = "[BYPASS] > Bypassing security layer 2...",        color = Color3.fromRGB(255, 80, 80)},
+    {txt = "[BYPASS] > Security layer 2 bypassed [SUCCESS]",  color = Color3.fromRGB(255, 120, 120)},
+    {txt = "[PROCESS] > Processing encryption keys...",        color = Color3.fromRGB(255, 70, 70)},
+    {txt = "[PROCESS] > Keys decrypted [SUCCESS]",            color = Color3.fromRGB(255, 120, 120)},
+    {txt = "[BYPASS] > Bypassing firewall...",                color = Color3.fromRGB(255, 80, 80)},
+    {txt = "[BYPASS] > Firewall bypassed [SUCCESS]",          color = Color3.fromRGB(255, 120, 120)},
+    {txt = "[PROCESS] > Processing payload injection...",      color = Color3.fromRGB(255, 70, 70)},
+    {txt = "[PROCESS] > Payload injected [SUCCESS]",          color = Color3.fromRGB(255, 120, 120)},
+    {txt = "[BYPASS] > Bypassing detection system...",        color = Color3.fromRGB(255, 80, 80)},
+    {txt = "[BYPASS] > Detection bypassed [SUCCESS]",         color = Color3.fromRGB(255, 120, 120)},
+    {txt = "[PROCESS] > Finalizing connection...",            color = Color3.fromRGB(255, 70, 70)},
+    {txt = "[PROCESS] > Connection established [READY]",      color = Color3.fromRGB(255, 120, 120)},
+}
+
+local function addLog(msg, color)
+    logIndex = logIndex + 1
+    local line = Instance.new("TextLabel")
+    line.Size = UDim2.new(1, 0, 0, 14)
+    line.BackgroundTransparency = 1
+    line.Text = "> " .. msg
+    line.TextColor3 = color or Color3.fromRGB(220, 70, 70)
+    line.TextSize = 9
+    line.Font = Enum.Font.Code
+    line.TextXAlignment = Enum.TextXAlignment.Left
+    line.LayoutOrder = logIndex
+    line.ZIndex = 4
+    line.Parent = LogContainer
+
+    table.insert(logLines, line)
+
+    if #logLines > 12 then
+        local old = table.remove(logLines, 1)
+        old:Destroy()
+    end
+end
+
+-- ========== PROGRESS SIMULATION (Cepat ke lambat) ==========
+local progress = 0
+
+-- Speed progression: dari cepat ke sangat lambat
+-- speedFactor semakin kecil = semakin lambat
+local steps = {
+    {target = 8,    speed = 0.6},   -- Cepat
+    {target = 18,   speed = 0.8},   -- Masih cepat
+    {target = 29,   speed = 1.0},   -- Normal
+    {target = 41,   speed = 1.3},   -- Mulai melambat
+    {target = 55,   speed = 1.6},   -- Lebih lambat
+    {target = 67,   speed = 1.9},   -- Lambat
+    {target = 76,   speed = 2.2},   -- Semakin lambat
+    {target = 84,   speed = 2.6},   -- Sangat lambat
+    {target = 91,   speed = 3.0},   -- Lebih sangat lambat
+    {target = 94.7, speed = 3.5},   -- Amat sangat lambat
+    {target = 96.2, speed = 4.0},   -- Paling lambat sebelum stop
+}
+
+-- Circular progress animation
+local function updateCircularProgress(pct)
+    PercentText.Text = string.format("%.1f%%", pct)
+    
+    -- Update ring border intensity based on progress
+    local intensity = 60 + (pct / 100) * 195
+    CenterRing.BorderColor3 = Color3.fromRGB(255, intensity, intensity)
+    RingGlow.BackgroundColor3 = Color3.fromRGB(255, intensity * 0.8, intensity * 0.8)
+    
+    -- Update status text based on progress
+    if pct < 30 then
+        StatusText.Text = "BYPASSING..."
+    elseif pct < 60 then
+        StatusText.Text = "PROCESSING..."
+    elseif pct < 85 then
+        StatusText.Text = "INJECTING..."
+    else
+        StatusText.Text = "FINALIZING"
+    end
+end
+
+-- Start progress dengan efek cepat ke lambat
+for _, step in ipairs(steps) do
+    while progress < step.target do
+        progress = math.min(progress + 0.3, step.target)
+        updateCircularProgress(progress)
+        -- Delay yang semakin besar = semakin lambat
+        task.wait(step.speed * 0.1)
+    end
+    -- Jeda antar step juga semakin lama
+    task.wait(step.speed * 0.3)
+end
+
+-- Stuck at 96.2% forever
+PercentText.Text = "96.2%"
+StatusText.Text = "AWAITING SIGNAL"
+print("[Mystryx] Loading halted at 96.2% - Signal pending")
+
+-- ========== LOG ANIMATION (LOOP 5 LOGS STYLE) ==========
+task.spawn(function()
+    -- Show initial logs
+    for i = 1, 5 do
+        local log = logMessages[i]
+        if log then
+            task.wait(0.8)
+            addLog(log.txt, log.color)
+        end
+    end
+    
+    -- Continue cycling logs forever (seperti sedang bypass terus)
+    local logIndexLoop = 1
+    while ScreenGui.Parent do
+        task.wait(math.random(2, 4) * 0.3) -- Random delay 0.6-1.2 detik
+        local log = logMessages[logIndexLoop]
+        if log then
+            addLog(log.txt, log.color)
+        end
+        logIndexLoop = logIndexLoop + 1
+        if logIndexLoop > #logMessages then
+            logIndexLoop = 1
+        end
+    end
+end)
+
+-- ========== PULSE ANIMATION ON CENTER RING ==========
+task.spawn(function()
+    local pulseTime = 0
+    while ScreenGui.Parent do
+        pulseTime = pulseTime + 0.033
+        local scale = 1 + math.sin(pulseTime * 3) * 0.02
+        CenterRing.Size = UDim2.new(0, 220 * scale, 0, 220 * scale)
+        CenterRing.Position = UDim2.new(0.5, -110 * scale, 0.5, -110 * scale)
+        task.wait(0.033)
+    end
+end)
+
+-- ========== ENTRY ANIMATION ==========
+Background.BackgroundTransparency = 1
+TweenService:Create(Background, TweenInfo.new(0.5), {BackgroundTransparency = 0}):Play()
+TweenService:Create(CenterRing, TweenInfo.new(0.6, Enum.EasingStyle.Back), {Size = UDim2.new(0, 220, 0, 220)}):Play()
+TweenService:Create(LeftPanel, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Position = UDim2.new(0, 20, 0, 20)}):Play()
+TweenService:Create(Sidebar, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Position = UDim2.new(1, -340, 0, 20)}):Play()
+
+-- Fade in orbs
+for _, orb in ipairs(orbs) do
+    orb.obj.BackgroundTransparency = 0.6
+    TweenService:Create(orb.obj, TweenInfo.new(1), {BackgroundTransparency = 0.4}):Play()
+end
+
+-- ========== CLICK BLOCKER ==========
+local Blocker = Instance.new("TextButton")
+Blocker.Size = UDim2.new(1, 0, 1, 0)
+Blocker.BackgroundTransparency = 1
+Blocker.Text = ""
+Blocker.ZIndex = 0
+Blocker.Parent = ScreenGui
