@@ -1,24 +1,24 @@
--- Loading Screen | MYSTRIX PREMIUM Effect
--- Stuck forever, no loading bar
+-- Loading Screen | Mystrix Hub Premium Edition
+-- Premium Loading Screen dengan desain eksklusif
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- Hapus yang lama jika ada
+-- Hapus loading screen lama jika ada
 pcall(function()
-    if game:GetService("CoreGui"):FindFirstChild("MYSTRIXPREMIUM") then
-        game:GetService("CoreGui"):FindFirstChild("MYSTRIXPREMIUM"):Destroy()
+    if game:GetService("CoreGui"):FindFirstChild("MystrixLoadingScreen") then
+        game:GetService("CoreGui"):FindFirstChild("MystrixLoadingScreen"):Destroy()
     end
 end)
-if LocalPlayer.PlayerGui:FindFirstChild("MYSTRIXPREMIUM") then
-    LocalPlayer.PlayerGui:FindFirstChild("MYSTRIXPREMIUM"):Destroy()
+if LocalPlayer.PlayerGui:FindFirstChild("MystrixLoadingScreen") then
+    LocalPlayer.PlayerGui:FindFirstChild("MystrixLoadingScreen"):Destroy()
 end
 
 -- ========== SCREENGUI ==========
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "MYSTRIXPREMIUM"
+ScreenGui.Name = "MystrixLoadingScreen"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset = true
@@ -35,18 +35,555 @@ else
     ScreenGui.Parent = game:GetService("CoreGui")
 end
 
--- ========== BACKGROUND (HITAM GELAP) ==========
+-- ========== BACKGROUND DENGAN VIGNETTE ==========
 local Background = Instance.new("Frame")
 Background.Size = UDim2.new(1, 0, 1, 0)
-Background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Background.BackgroundColor3 = Color3.fromRGB(10, 3, 3)
 Background.BorderSizePixel = 0
 Background.ZIndex = 1
 Background.Parent = ScreenGui
 
-Background.BackgroundTransparency = 1
-TweenService:Create(Background, TweenInfo.new(0.5), {BackgroundTransparency = 0}):Play()
+-- Gradient overlay
+local GradientOverlay = Instance.new("Frame")
+GradientOverlay.Size = UDim2.new(1, 0, 1, 0)
+GradientOverlay.BackgroundTransparency = 0.5
+GradientOverlay.ZIndex = 2
+GradientOverlay.Parent = Background
 
--- ========== BLOKIR KLIK ==========
+local Gradient = Instance.new("UIGradient")
+Gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 8, 8)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(15, 4, 4)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 10, 10))
+})
+Gradient.Rotation = 45
+Gradient.Parent = GradientOverlay
+
+-- Vignette effect
+local Vignette = Instance.new("Frame")
+Vignette.Size = UDim2.new(1, 0, 1, 0)
+Vignette.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Vignette.BackgroundTransparency = 0.6
+Vignette.ZIndex = 3
+Vignette.Parent = Background
+
+local VignetteCorner = Instance.new("UICorner")
+VignetteCorner.CornerRadius = UDim.new(0, 200)
+VignetteCorner.Parent = Vignette
+
+-- Particle effect
+local ParticleLayer = Instance.new("Frame")
+ParticleLayer.Size = UDim2.new(1, 0, 1, 0)
+ParticleLayer.BackgroundTransparency = 1
+ParticleLayer.ZIndex = 4
+ParticleLayer.Parent = Background
+
+local particles = {}
+for i = 1, 40 do
+    local particle = Instance.new("Frame")
+    particle.Size = UDim2.new(0, math.random(1, 3), 0, math.random(1, 3))
+    particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+    particle.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    particle.BackgroundTransparency = math.random(30, 70) / 100
+    particle.BorderSizePixel = 0
+    particle.ZIndex = 4
+    particle.Parent = ParticleLayer
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = particle
+    
+    table.insert(particles, {
+        frame = particle,
+        speedX = (math.random(-30, 30) / 1000),
+        speedY = (math.random(-20, 20) / 1000),
+        trans = particle.BackgroundTransparency
+    })
+end
+
+task.spawn(function()
+    while ScreenGui.Parent do
+        for _, p in ipairs(particles) do
+            local newX = p.frame.Position.X.Scale + p.speedX
+            local newY = p.frame.Position.Y.Scale + p.speedY
+            if newX > 1 then newX = 0 end
+            if newX < 0 then newX = 1 end
+            if newY > 1 then newY = 0 end
+            if newY < 0 then newY = 1 end
+            p.frame.Position = UDim2.new(newX, 0, newY, 0)
+            p.frame.BackgroundTransparency = p.trans + (math.sin(tick() * 2) * 0.1)
+        end
+        task.wait(0.05)
+    end
+end)
+
+-- ========== MAIN CARD ==========
+local Card = Instance.new("Frame")
+Card.Size = UDim2.new(0, 360, 0, 420)
+Card.Position = UDim2.new(0.5, -180, 0.5, -210)
+Card.BackgroundColor3 = Color3.fromRGB(8, 3, 3)
+Card.BackgroundTransparency = 0.05
+Card.BorderSizePixel = 0
+Card.ZIndex = 10
+Card.Parent = Background
+
+local CardCorner = Instance.new("UICorner", Card)
+CardCorner.CornerRadius = UDim.new(0, 20)
+
+local CardBorder = Instance.new("Frame")
+CardBorder.Size = UDim2.new(1, 0, 1, 0)
+CardBorder.BackgroundTransparency = 1
+CardBorder.ZIndex = 9
+CardBorder.Parent = Card
+
+local BorderGradient = Instance.new("UIGradient")
+BorderGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 40, 40)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(100, 20, 20)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 40, 40))
+})
+BorderGradient.Rotation = 90
+BorderGradient.Parent = CardBorder
+
+local BorderStroke = Instance.new("UIStroke")
+BorderStroke.Thickness = 2
+BorderStroke.Color = Color3.fromRGB(180, 30, 30)
+BorderStroke.Transparency = 0.5
+BorderStroke.Parent = Card
+
+local InnerGlow = Instance.new("Frame")
+InnerGlow.Size = UDim2.new(1, -4, 1, -4)
+InnerGlow.Position = UDim2.new(0, 2, 0, 2)
+InnerGlow.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
+InnerGlow.BackgroundTransparency = 0.92
+InnerGlow.BorderSizePixel = 0
+InnerGlow.ZIndex = 11
+InnerGlow.Parent = Card
+Instance.new("UICorner", InnerGlow).CornerRadius = UDim.new(0, 16)
+
+-- ========== HEADER ==========
+local HeaderFrame = Instance.new("Frame")
+HeaderFrame.Size = UDim2.new(1, 0, 0, 55)
+HeaderFrame.Position = UDim2.new(0, 0, 0, 0)
+HeaderFrame.BackgroundTransparency = 1
+HeaderFrame.ZIndex = 12
+HeaderFrame.Parent = Card
+
+local LogoCircle = Instance.new("Frame")
+LogoCircle.Size = UDim2.new(0, 38, 0, 38)
+LogoCircle.Position = UDim2.new(0.5, -19, 0, 8)
+LogoCircle.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
+LogoCircle.BorderSizePixel = 0
+LogoCircle.ZIndex = 13
+LogoCircle.Parent = HeaderFrame
+Instance.new("UICorner", LogoCircle).CornerRadius = UDim.new(1, 0)
+
+local LogoIcon = Instance.new("TextLabel")
+LogoIcon.Size = UDim2.new(1, 0, 1, 0)
+LogoIcon.BackgroundTransparency = 1
+LogoIcon.Text = "M"
+LogoIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+LogoIcon.TextSize = 24
+LogoIcon.Font = Enum.Font.GothamBold
+LogoIcon.TextScaled = true
+LogoIcon.ZIndex = 14
+LogoIcon.Parent = LogoCircle
+
+task.spawn(function()
+    while ScreenGui.Parent do
+        for i = 1, 2 do
+            TweenService:Create(LogoCircle, TweenInfo.new(0.3), {
+                BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+            }):Play()
+            task.wait(0.3)
+            TweenService:Create(LogoCircle, TweenInfo.new(0.3), {
+                BackgroundColor3 = Color3.fromRGB(180, 30, 30)
+            }):Play()
+            task.wait(0.3)
+        end
+        task.wait(1)
+    end
+end)
+
+local TitleText = Instance.new("TextLabel")
+TitleText.Size = UDim2.new(1, 0, 0, 24)
+TitleText.Position = UDim2.new(0, 0, 0, 48)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "MYSTRIX HUB"
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.TextSize = 18
+TitleText.Font = Enum.Font.GothamBold
+TitleText.TextScaled = true
+TitleText.ZIndex = 12
+TitleText.Parent = HeaderFrame
+
+local SubTitleText = Instance.new("TextLabel")
+SubTitleText.Size = UDim2.new(1, 0, 0, 14)
+SubTitleText.Position = UDim2.new(0, 0, 0, 74)
+SubTitleText.BackgroundTransparency = 1
+SubTitleText.Text = "PREMIUM EDITION"
+SubTitleText.TextColor3 = Color3.fromRGB(200, 50, 50)
+SubTitleText.TextSize = 9
+SubTitleText.Font = Enum.Font.Gotham
+SubTitleText.ZIndex = 12
+SubTitleText.Parent = HeaderFrame
+
+local Separator = Instance.new("Frame")
+Separator.Size = UDim2.new(0.85, 0, 0, 1)
+Separator.Position = UDim2.new(0.075, 0, 0, 94)
+Separator.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
+Separator.BackgroundTransparency = 0.6
+Separator.BorderSizePixel = 0
+Separator.ZIndex = 12
+Separator.Parent = Card
+
+-- ========== CIRCULAR LOADING ==========
+local LoadingContainer = Instance.new("Frame")
+LoadingContainer.Size = UDim2.new(0, 80, 0, 80)
+LoadingContainer.Position = UDim2.new(0.5, -40, 0, 108)
+LoadingContainer.BackgroundTransparency = 1
+LoadingContainer.ZIndex = 15
+LoadingContainer.Parent = Card
+
+local CircleOuter = Instance.new("Frame")
+CircleOuter.Size = UDim2.new(1, 0, 1, 0)
+CircleOuter.BackgroundColor3 = Color3.fromRGB(40, 10, 10)
+CircleOuter.BackgroundTransparency = 0.7
+CircleOuter.BorderSizePixel = 0
+CircleOuter.ZIndex = 16
+CircleOuter.Parent = LoadingContainer
+Instance.new("UICorner", CircleOuter).CornerRadius = UDim.new(1, 0)
+
+local CircleInner = Instance.new("Frame")
+CircleInner.Size = UDim2.new(0.8, 0, 0.8, 0)
+CircleInner.Position = UDim2.new(0.1, 0, 0.1, 0)
+CircleInner.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
+CircleInner.BackgroundTransparency = 0.3
+CircleInner.BorderSizePixel = 0
+CircleInner.ZIndex = 17
+CircleInner.Parent = LoadingContainer
+Instance.new("UICorner", CircleInner).CornerRadius = UDim.new(1, 0)
+
+local arcColors = {
+    Color3.fromRGB(220, 50, 50),
+    Color3.fromRGB(180, 35, 35),
+    Color3.fromRGB(200, 40, 40),
+    Color3.fromRGB(160, 30, 30)
+}
+
+local arcs = {}
+for i = 1, 4 do
+    local arc = Instance.new("Frame")
+    local angle = (i - 1) * 90
+    local rad = math.rad(angle)
+    local x = 0.5 + math.cos(rad) * 0.3
+    local y = 0.5 + math.sin(rad) * 0.3
+    
+    arc.Size = UDim2.new(0, 20, 0, 20)
+    arc.Position = UDim2.new(x, -10, y, -10)
+    arc.BackgroundColor3 = arcColors[i]
+    arc.BackgroundTransparency = 0.4
+    arc.BorderSizePixel = 0
+    arc.ZIndex = 18
+    arc.Parent = LoadingContainer
+    Instance.new("UICorner", arc).CornerRadius = UDim.new(1, 0)
+    
+    table.insert(arcs, arc)
+end
+
+task.spawn(function()
+    local rotation = 0
+    while ScreenGui.Parent do
+        rotation = rotation + 5
+        for i, arc in ipairs(arcs) do
+            local angle = (i - 1) * 90 + rotation
+            local rad = math.rad(angle)
+            local x = 0.5 + math.cos(rad) * 0.3
+            local y = 0.5 + math.sin(rad) * 0.3
+            arc.Position = UDim2.new(x, -10, y, -10)
+            local fade = 0.3 + math.sin(math.rad(angle * 2)) * 0.2
+            arc.BackgroundTransparency = fade
+        end
+        task.wait(0.02)
+    end
+end)
+
+local LoadPercent = Instance.new("TextLabel")
+LoadPercent.Size = UDim2.new(1, 0, 1, 0)
+LoadPercent.BackgroundTransparency = 1
+LoadPercent.Text = "0%"
+LoadPercent.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadPercent.TextSize = 14
+LoadPercent.Font = Enum.Font.GothamBold
+LoadPercent.ZIndex = 19
+LoadPercent.Parent = LoadingContainer
+
+-- ========== LOADING STATUS TEXT ==========
+local StatusText = Instance.new("TextLabel")
+StatusText.Size = UDim2.new(0.9, 0, 0, 24)
+StatusText.Position = UDim2.new(0.05, 0, 0, 200)
+StatusText.BackgroundTransparency = 1
+StatusText.Text = "Initializing Mystrix Core..."
+StatusText.TextColor3 = Color3.fromRGB(220, 70, 70)
+StatusText.TextSize = 10
+StatusText.Font = Enum.Font.Gotham
+StatusText.ZIndex = 12
+StatusText.Parent = Card
+
+task.spawn(function()
+    local dots = 0
+    while ScreenGui.Parent do
+        dots = dots + 1
+        if dots > 3 then dots = 0 end
+        local baseText = string.match(StatusText.Text, "^[^.]+")
+        if baseText then
+            StatusText.Text = baseText .. string.rep(".", dots)
+        end
+        task.wait(0.4)
+    end
+end)
+
+-- ========== DETAIL BARS ==========
+local DetailContainer = Instance.new("Frame")
+DetailContainer.Size = UDim2.new(0.85, 0, 0, 65)
+DetailContainer.Position = UDim2.new(0.075, 0, 0, 232)
+DetailContainer.BackgroundTransparency = 1
+DetailContainer.ZIndex = 12
+DetailContainer.Parent = Card
+
+local detailItems = {
+    {name = "AUTHENTICATION", value = 0, color = Color3.fromRGB(200, 50, 50)},
+    {name = "MODULE INJECTION", value = 0, color = Color3.fromRGB(180, 40, 40)},
+    {name = "SECURE HANDSHAKE", value = 0, color = Color3.fromRGB(220, 60, 60)},
+    {name = "DATA SYNC", value = 0, color = Color3.fromRGB(190, 45, 45)}
+}
+
+local detailBars = {}
+local targetProgress = 0
+
+for i, item in ipairs(detailItems) do
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 14)
+    row.Position = UDim2.new(0, 0, 0, (i-1) * 16)
+    row.BackgroundTransparency = 1
+    row.Parent = DetailContainer
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.45, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = item.name
+    label.TextColor3 = Color3.fromRGB(170, 170, 170)
+    label.TextSize = 8
+    label.Font = Enum.Font.Gotham
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = row
+    
+    local barBg = Instance.new("Frame")
+    barBg.Size = UDim2.new(0.5, 0, 0.7, 0)
+    barBg.Position = UDim2.new(0.47, 0, 0.15, 0)
+    barBg.BackgroundColor3 = Color3.fromRGB(30, 8, 8)
+    barBg.BorderSizePixel = 0
+    barBg.Parent = row
+    Instance.new("UICorner", barBg).CornerRadius = UDim.new(1, 0)
+    
+    local barFill = Instance.new("Frame")
+    barFill.Size = UDim2.new(0, 0, 1, 0)
+    barFill.BackgroundColor3 = item.color
+    barFill.BorderSizePixel = 0
+    barFill.Parent = barBg
+    Instance.new("UICorner", barFill).CornerRadius = UDim.new(1, 0)
+    
+    local percentLabel = Instance.new("TextLabel")
+    percentLabel.Size = UDim2.new(0.1, 0, 1, 0)
+    percentLabel.Position = UDim2.new(0.98, 0, 0, 0)
+    percentLabel.BackgroundTransparency = 1
+    percentLabel.Text = "0%"
+    percentLabel.TextColor3 = Color3.fromRGB(200, 70, 70)
+    percentLabel.TextSize = 7
+    percentLabel.Font = Enum.Font.Gotham
+    percentLabel.TextXAlignment = Enum.TextXAlignment.Right
+    percentLabel.Parent = row
+    
+    table.insert(detailBars, {
+        fill = barFill,
+        label = percentLabel,
+        current = 0,
+        color = item.color
+    })
+end
+
+-- ========== WARNING TEXT ==========
+local WarningFrame = Instance.new("Frame")
+WarningFrame.Size = UDim2.new(0.9, 0, 0, 30)
+WarningFrame.Position = UDim2.new(0.05, 0, 0, 308)
+WarningFrame.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
+WarningFrame.BackgroundTransparency = 0.85
+WarningFrame.BorderSizePixel = 0
+WarningFrame.ZIndex = 12
+WarningFrame.Parent = Card
+Instance.new("UICorner", WarningFrame).CornerRadius = UDim.new(0, 5)
+
+local WarningIcon = Instance.new("TextLabel")
+WarningIcon.Size = UDim2.new(0, 18, 1, 0)
+WarningIcon.Position = UDim2.new(0, 8, 0, 0)
+WarningIcon.BackgroundTransparency = 1
+WarningIcon.Text = "⚠"
+WarningIcon.TextColor3 = Color3.fromRGB(255, 80, 80)
+WarningIcon.TextSize = 14
+WarningIcon.Font = Enum.Font.GothamBold
+WarningIcon.ZIndex = 13
+WarningIcon.Parent = WarningFrame
+
+local WarningText = Instance.new("TextLabel")
+WarningText.Size = UDim2.new(1, -30, 1, 0)
+WarningText.Position = UDim2.new(0, 30, 0, 0)
+WarningText.BackgroundTransparency = 1
+WarningText.Text = "Do not close until complete!"
+WarningText.TextColor3 = Color3.fromRGB(255, 100, 100)
+WarningText.TextSize = 9
+WarningText.Font = Enum.Font.GothamBold
+WarningText.TextXAlignment = Enum.TextXAlignment.Left
+WarningText.ZIndex = 13
+WarningText.Parent = WarningFrame
+
+-- ========== FOOTER ==========
+local FooterFrame = Instance.new("Frame")
+FooterFrame.Size = UDim2.new(1, 0, 0, 25)
+FooterFrame.Position = UDim2.new(0, 0, 1, -25)
+FooterFrame.BackgroundTransparency = 1
+FooterFrame.ZIndex = 12
+FooterFrame.Parent = Card
+
+local VersionText = Instance.new("TextLabel")
+VersionText.Size = UDim2.new(0.5, 0, 1, 0)
+VersionText.Position = UDim2.new(0, 12, 0, 0)
+VersionText.BackgroundTransparency = 1
+VersionText.Text = "v3.0.1 | PREMIUM"
+VersionText.TextColor3 = Color3.fromRGB(120, 40, 40)
+VersionText.TextSize = 7
+VersionText.Font = Enum.Font.Gotham
+VersionText.TextXAlignment = Enum.TextXAlignment.Left
+VersionText.Parent = FooterFrame
+
+local SecureText = Instance.new("TextLabel")
+SecureText.Size = UDim2.new(0.5, 0, 1, 0)
+SecureText.Position = UDim2.new(0.5, -12, 0, 0)
+SecureText.BackgroundTransparency = 1
+SecureText.Text = "🔒 SECURE"
+SecureText.TextColor3 = Color3.fromRGB(120, 40, 40)
+SecureText.TextSize = 7
+SecureText.Font = Enum.Font.Gotham
+SecureText.TextXAlignment = Enum.TextXAlignment.Right
+SecureText.Parent = FooterFrame
+
+-- ========== PROGRESS SIMULATION (Sinkron semua bar) ==========
+local mainProgress = 0
+local statusMessages = {
+    "Authenticating license",
+    "Establishing secure channel",
+    "Loading core modules",
+    "Injecting protected routines",
+    "Verifying integrity",
+    "Synchronizing data",
+    "Finalizing setup",
+    "Almost ready"
+}
+
+local statusIndex = 1
+local stepProgress = 0
+
+-- Fungsi untuk mendapatkan kecepatan increment berdasarkan progress
+local function getIncrement(currentProgress)
+    if currentProgress > 90 then
+        return 0.1
+    elseif currentProgress > 80 then
+        return 0.15
+    elseif currentProgress > 70 then
+        return 0.2
+    elseif currentProgress > 60 then
+        return 0.3
+    elseif currentProgress > 50 then
+        return 0.4
+    elseif currentProgress > 40 then
+        return 0.5
+    elseif currentProgress > 30 then
+        return 0.6
+    elseif currentProgress > 20 then
+        return 0.7
+    elseif currentProgress > 10 then
+        return 0.8
+    else
+        return 0.9
+    end
+end
+
+-- Fungsi untuk mendapatkan delay berdasarkan progress
+local function getDelay(currentProgress)
+    if currentProgress > 90 then
+        return 0.4
+    elseif currentProgress > 80 then
+        return 0.3
+    elseif currentProgress > 70 then
+        return 0.25
+    elseif currentProgress > 60 then
+        return 0.2
+    else
+        return 0.15
+    end
+end
+
+-- Update detail bars (sinkron dengan main progress)
+task.spawn(function()
+    while ScreenGui.Parent and mainProgress < 100 do
+        -- Update setiap detail bar mengikuti mainProgress
+        for _, bar in ipairs(detailBars) do
+            if bar.current < mainProgress then
+                bar.current = math.min(bar.current + 0.5, mainProgress)
+                local width = (bar.current / 100) * 0.5
+                TweenService:Create(bar.fill, TweenInfo.new(0.1), {
+                    Size = UDim2.new(width, 0, 1, 0)
+                }):Play()
+                bar.label.Text = math.floor(bar.current) .. "%"
+                
+                if bar.current >= 100 then
+                    bar.fill.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+                end
+            end
+        end
+        task.wait(0.05)
+    end
+end)
+
+-- Main progress simulation (semakin lambat di akhir)
+task.spawn(function()
+    while mainProgress < 97 do
+        local increment = getIncrement(mainProgress)
+        mainProgress = math.min(mainProgress + increment, 97)
+        LoadPercent.Text = string.format("%.1f", mainProgress) .. "%"
+        
+        -- Update status text
+        if mainProgress > stepProgress + 10 then
+            stepProgress = mainProgress
+            if statusIndex <= #statusMessages then
+                StatusText.Text = statusMessages[statusIndex] .. ""
+                statusIndex = statusIndex + 1
+            end
+        end
+        
+        -- Efek pulse
+        local pulse = 0.3 + math.sin(mainProgress * 0.1) * 0.15
+        CircleInner.BackgroundTransparency = pulse
+        
+        local loopDelay = getDelay(mainProgress)
+        task.wait(loopDelay)
+    end
+    
+    LoadPercent.Text = "97%"
+    StatusText.Text = "Finalizing secure connection"
+    print("[Mystrix Hub] Loading completed (97%) - waiting for manual completion")
+end)
+
+-- ========== BLOCKER ==========
 local Blocker = Instance.new("TextButton")
 Blocker.Size = UDim2.new(1, 0, 1, 0)
 Blocker.BackgroundTransparency = 1
@@ -54,526 +591,11 @@ Blocker.Text = ""
 Blocker.ZIndex = 0
 Blocker.Parent = ScreenGui
 
--- ========== TULISAN MYSTRIX PREMIUM (RGB BERKEDIP) ==========
-local MystrixTitle = Instance.new("TextLabel")
-MystrixTitle.Size = UDim2.new(1, 0, 0, 100)
-MystrixTitle.Position = UDim2.new(0, 0, 0.35, -50)
-MystrixTitle.BackgroundTransparency = 1
-MystrixTitle.Text = "MYSTRIX PREMIUM"
-MystrixTitle.TextSize = 100
-MystrixTitle.Font = Enum.Font.GothamBold
-MystrixTitle.TextScaled = true
-MystrixTitle.ZIndex = 3
-MystrixTitle.Parent = Background
+-- ========== FADE IN ANIMATION ==========
+Background.BackgroundTransparency = 1
+Card.BackgroundTransparency = 0.1
 
--- Efek RGB berkedip untuk MYSTRIX PREMIUM
-task.spawn(function()
-    local hue = 0
-    while ScreenGui.Parent do
-        hue = (hue + 0.01) % 1
-        MystrixTitle.TextColor3 = Color3.fromHSV(hue, 1, 1)
-        task.wait(0.05)
-    end
-end)
+TweenService:Create(Background, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {BackgroundTransparency = 0}):Play()
+TweenService:Create(Card, TweenInfo.new(0.5, Enum.EasingStyle.Back), {BackgroundTransparency = 0.05}):Play()
 
--- ========== ANIMASI GEMBOK DIBAKA PAKSA ==========
-local LockContainer = Instance.new("Frame")
-LockContainer.Size = UDim2.new(0, 220, 0, 220)
-LockContainer.Position = UDim2.new(0.5, -110, 0.65, -110)
-LockContainer.BackgroundTransparency = 1
-LockContainer.ZIndex = 3
-LockContainer.Parent = Background
-
--- Efek getaran untuk gembok (seperti sedang dipaksa)
-local function shakeObject(obj, intensity, duration)
-    local originalPos = obj.Position
-    local startTime = tick()
-    local connection
-    connection = RunService.RenderStepped:Connect(function()
-        if tick() - startTime > duration then
-            obj.Position = originalPos
-            connection:Disconnect()
-            return
-        end
-        local offsetX = math.random(-intensity, intensity)
-        local offsetY = math.random(-intensity, intensity)
-        obj.Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset + offsetX, originalPos.Y.Scale, originalPos.Y.Offset + offsetY)
-    end)
-end
-
--- Bagian badan gembok (bawah) - akan retak
-local LockBody = Instance.new("Frame")
-LockBody.Size = UDim2.new(0, 110, 0, 90)
-LockBody.Position = UDim2.new(0.5, -55, 0.5, 25)
-LockBody.BackgroundColor3 = Color3.fromRGB(180, 150, 30)
-LockBody.BorderSizePixel = 3
-LockBody.BorderColor3 = Color3.fromRGB(255, 200, 50)
-LockBody.ZIndex = 3
-LockBody.Parent = LockContainer
-
--- Lubang kunci di badan gembok
-local Keyhole = Instance.new("Frame")
-Keyhole.Size = UDim2.new(0, 18, 0, 24)
-Keyhole.Position = UDim2.new(0.5, -9, 0.5, -8)
-Keyhole.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Keyhole.BorderSizePixel = 0
-Keyhole.ZIndex = 4
-Keyhole.Parent = LockBody
-
--- Lingkaran bawah lubang kunci
-local KeyholeCircle = Instance.new("Frame")
-KeyholeCircle.Size = UDim2.new(0, 18, 0, 18)
-KeyholeCircle.Position = UDim2.new(0.5, -9, 0.6, 0)
-KeyholeCircle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-KeyholeCircle.BorderSizePixel = 0
-KeyholeCircle.ZIndex = 4
-KeyholeCircle.Parent = LockBody
-
--- Retakan pada gembok (garis-garis)
-local crackLines = {}
-for i = 1, 8 do
-    local crack = Instance.new("Frame")
-    crack.Size = UDim2.new(0, math.random(15, 35), 0, 2)
-    crack.Position = UDim2.new(0.5 + (math.random(-40, 40)/100), 0, 0.5 + (math.random(-30, 30)/100), 0)
-    crack.BackgroundColor3 = Color3.fromRGB(255, 100, 50)
-    crack.BorderSizePixel = 0
-    crack.Rotation = math.random(-60, 60)
-    crack.BackgroundTransparency = 1
-    crack.ZIndex = 5
-    crack.Parent = LockBody
-    table.insert(crackLines, crack)
-end
-
--- Busur gembok (atas)
-local LockArc = Instance.new("Frame")
-LockArc.Size = UDim2.new(0, 120, 0, 65)
-LockArc.Position = UDim2.new(0.5, -60, 0.5, -35)
-LockArc.BackgroundColor3 = Color3.fromRGB(180, 150, 30)
-LockArc.BorderSizePixel = 3
-LockArc.BorderColor3 = Color3.fromRGB(255, 200, 50)
-LockArc.ZIndex = 3
-LockArc.Parent = LockContainer
-
--- Lingkaran busur
-local ArcTop = Instance.new("Frame")
-ArcTop.Size = UDim2.new(0, 90, 0, 22)
-ArcTop.Position = UDim2.new(0.5, -45, 0, -18)
-ArcTop.BackgroundColor3 = Color3.fromRGB(180, 150, 30)
-ArcTop.BorderSizePixel = 3
-ArcTop.BorderColor3 = Color3.fromRGB(255, 200, 50)
-ArcTop.ZIndex = 3
-ArcTop.Parent = LockContainer
-
--- ========== EFEK PERCIKAN API (SPARK) ==========
-local function createSpark(posX, posY)
-    local spark = Instance.new("Frame")
-    spark.Size = UDim2.new(0, math.random(3, 8), 0, math.random(3, 8))
-    spark.Position = UDim2.new(0.5, posX + math.random(-20, 20), 0.65, posY + math.random(-20, 20))
-    spark.BackgroundColor3 = Color3.fromRGB(255, math.random(100, 200), math.random(0, 50))
-    spark.BorderSizePixel = 0
-    spark.ZIndex = 10
-    spark.Parent = LockContainer
-    
-    local targetX = posX + math.random(-150, 150)
-    local targetY = posY + math.random(-120, 120)
-    
-    TweenService:Create(spark, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, targetX, 0.65, targetY),
-        Size = UDim2.new(0, 1, 0, 1),
-        BackgroundTransparency = 1
-    }):Play()
-    
-    task.wait(0.8)
-    spark:Destroy()
-end
-
--- ========== EFEK FLASH BERULANG (MULTIPLE FLASHES) ==========
-local function createRepeatingFlash(count, interval, maxSize)
-    local flashes = {}
-    
-    for i = 1, count do
-        task.spawn(function()
-            task.wait((i - 1) * interval)
-            
-            local flash = Instance.new("Frame")
-            flash.Size = UDim2.new(0, 100, 0, 100)
-            flash.Position = UDim2.new(0.5, -50, 0.5, -50)
-            flash.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            flash.BackgroundTransparency = 0.6
-            flash.BorderSizePixel = 0
-            flash.ZIndex = 15
-            flash.Parent = LockContainer
-            
-            -- Efek getaran pada flash
-            local originalPos = flash.Position
-            local shakeConnection
-            shakeConnection = RunService.RenderStepped:Connect(function()
-                if not flash.Parent then 
-                    shakeConnection:Disconnect()
-                    return 
-                end
-                local offsetX = math.random(-8, 8)
-                local offsetY = math.random(-8, 8)
-                flash.Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset + offsetX, originalPos.Y.Scale, originalPos.Y.Offset + offsetY)
-            end)
-            
-            -- Animasi flash membesar dan memudar
-            TweenService:Create(flash, TweenInfo.new(0.15), {
-                Size = UDim2.new(0, maxSize + (i * 20), 0, maxSize + (i * 20)),
-                Position = UDim2.new(0.5, -(maxSize + (i * 20))/2, 0.5, -(maxSize + (i * 20))/2),
-                BackgroundTransparency = 0.2
-            }):Play()
-            
-            task.wait(0.12)
-            
-            TweenService:Create(flash, TweenInfo.new(0.1), {
-                BackgroundTransparency = 1,
-                Size = UDim2.new(0, maxSize + 50 + (i * 20), 0, maxSize + 50 + (i * 20)),
-                Position = UDim2.new(0.5, -(maxSize + 50 + (i * 20))/2, 0.5, -(maxSize + 50 + (i * 20))/2)
-            }):Play()
-            
-            task.wait(0.1)
-            shakeConnection:Disconnect()
-            flash:Destroy()
-        end)
-    end
-end
-
--- Efek flash dengan warna berbeda (RGB flash)
-local function createRGBFlash(count, interval)
-    for i = 1, count do
-        task.spawn(function()
-            task.wait((i - 1) * interval)
-            
-            local flash = Instance.new("Frame")
-            flash.Size = UDim2.new(0, 120, 0, 120)
-            flash.Position = UDim2.new(0.5, -60, 0.5, -60)
-            flash.BorderSizePixel = 0
-            flash.ZIndex = 16
-            flash.Parent = LockContainer
-            
-            local hue = math.random()
-            flash.BackgroundColor3 = Color3.fromHSV(hue, 1, 0.8)
-            flash.BackgroundTransparency = 0.5
-            
-            TweenService:Create(flash, TweenInfo.new(0.1), {
-                Size = UDim2.new(0, 220, 0, 220),
-                Position = UDim2.new(0.5, -110, 0.5, -110),
-                BackgroundTransparency = 0.1
-            }):Play()
-            
-            task.wait(0.08)
-            
-            TweenService:Create(flash, TweenInfo.new(0.12), {
-                BackgroundTransparency = 1,
-                Size = UDim2.new(0, 300, 0, 300),
-                Position = UDim2.new(0.5, -150, 0.5, -150)
-            }):Play()
-            
-            task.wait(0.12)
-            flash:Destroy()
-        end)
-    end
-end
-
--- Efek patahnya busur gembok
-local function breakLockArc()
-    -- Potongan busur yang patah
-    local brokenPiece1 = LockArc:Clone()
-    brokenPiece1.Parent = LockContainer
-    brokenPiece1.Size = UDim2.new(0, 60, 0, 40)
-    brokenPiece1.Position = LockArc.Position
-    brokenPiece1.Rotation = 0
-    
-    local brokenPiece2 = ArcTop:Clone()
-    brokenPiece2.Parent = LockContainer
-    brokenPiece2.Size = UDim2.new(0, 45, 0, 18)
-    brokenPiece2.Position = ArcTop.Position
-    brokenPiece2.Rotation = 0
-    
-    -- Sembunyikan yang asli
-    LockArc.Visible = false
-    ArcTop.Visible = false
-    
-    -- Lempar potongan ke arah berlawanan
-    TweenService:Create(brokenPiece1, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, math.random(-180, -80), 0.65, math.random(-150, -50)),
-        Rotation = math.random(-120, -60),
-        BackgroundTransparency = 1
-    }):Play()
-    
-    TweenService:Create(brokenPiece2, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, math.random(80, 180), 0.65, math.random(-150, -50)),
-        Rotation = math.random(60, 120),
-        BackgroundTransparency = 1
-    }):Play()
-    
-    task.wait(0.6)
-    brokenPiece1:Destroy()
-    brokenPiece2:Destroy()
-end
-
--- ========== ANIMASI UTAMA GEMBOK DIBAKA PAKSA ==========
-task.spawn(function()
-    task.wait(0.8)
-    
-    -- Getaran pertama (mulai dipaksa)
-    shakeObject(LockContainer, 5, 0.5)
-    for i = 1, 8 do
-        createSpark(0, 0)
-        task.wait(0.05)
-    end
-    
-    task.wait(0.3)
-    
-    -- Getaran lebih kuat + retakan mulai muncul
-    shakeObject(LockContainer, 10, 0.8)
-    for _, crack in ipairs(crackLines) do
-        TweenService:Create(crack, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
-    end
-    
-    -- Percikan api lebih banyak
-    for i = 1, 15 do
-        createSpark(math.random(-50, 50), math.random(-40, 40))
-        task.wait(0.03)
-    end
-    
-    task.wait(0.4)
-    
-    -- ========== FLASH BERULANG 1 (3x flash putih) ==========
-    createRepeatingFlash(3, 0.12, 150)
-    
-    -- Getaran paling kuat sebelum patah
-    shakeObject(LockContainer, 15, 0.5)
-    
-    -- Percikan api besar
-    for i = 1, 25 do
-        createSpark(math.random(-60, 60), math.random(-50, 50))
-        task.wait(0.02)
-    end
-    
-    task.wait(0.2)
-    
-    -- ========== FLASH BERULANG 2 (4x flash RGB) ==========
-    createRGBFlash(4, 0.1)
-    
-    -- Busur gembok patah dan terbang
-    breakLockArc()
-    
-    -- ========== FLASH BERULANG 3 (Ledakan besar berulang) ==========
-    createRepeatingFlash(5, 0.08, 200)
-    
-    -- Percikan api terakhir
-    for i = 1, 35 do
-        createSpark(math.random(-80, 80), math.random(-60, 60))
-        task.wait(0.015)
-    end
-    
-    -- Efek getaran sisa
-    shakeObject(LockContainer, 8, 0.4)
-    
-    -- ========== FLASH BERULANG 4 (Final flash sequence) ==========
-    createRGBFlash(3, 0.15)
-    createRepeatingFlash(2, 0.1, 180)
-    
-    -- Badan gembok berubah warna (terbakar)
-    TweenService:Create(LockBody, TweenInfo.new(0.5), {
-        BackgroundColor3 = Color3.fromRGB(100, 50, 20),
-        BorderColor3 = Color3.fromRGB(255, 100, 50)
-    }):Play()
-    
-    -- Efek asap kecil (lingkaran hitam)
-    for i = 1, 15 do
-        local smoke = Instance.new("Frame")
-        smoke.Size = UDim2.new(0, math.random(10, 30), 0, math.random(10, 30))
-        smoke.Position = UDim2.new(0.5, math.random(-40, 40), 0.65, math.random(-30, 30))
-        smoke.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        smoke.BackgroundTransparency = 0.4
-        smoke.BorderSizePixel = 0
-        smoke.ZIndex = 8
-        smoke.Parent = LockContainer
-        
-        TweenService:Create(smoke, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0.5, math.random(-100, 100), 0.65, math.random(-100, 50)),
-            Size = UDim2.new(0, 50, 0, 50),
-            BackgroundTransparency = 1
-        }):Play()
-        
-        task.wait(0.08)
-        smoke:Destroy()
-    end
-end)
-
--- Efek RGB untuk gembok (berubah intensitas)
-task.spawn(function()
-    local hue = 0
-    while ScreenGui.Parent and LockBody.Parent do
-        hue = (hue + 0.02) % 1
-        if LockBody.Visible then
-            LockBody.BorderColor3 = Color3.fromHSV(hue, 1, 1)
-        end
-        if LockArc.Visible then
-            LockArc.BorderColor3 = Color3.fromHSV(hue, 1, 1)
-            ArcTop.BorderColor3 = Color3.fromHSV(hue, 1, 1)
-        end
-        task.wait(0.05)
-    end
-end)
-
--- ========== PARTIKEL KUNCI LEPAS & SERPIHAN ==========
-local function createShrapnel()
-    local shrapnel = Instance.new("Frame")
-    shrapnel.Size = UDim2.new(0, math.random(4, 10), 0, math.random(2, 5))
-    shrapnel.Position = UDim2.new(0.5, math.random(-60, 60), 0.65, math.random(-50, 50))
-    shrapnel.BackgroundColor3 = Color3.fromRGB(180, 150, 30)
-    shrapnel.BorderSizePixel = 1
-    shrapnel.BorderColor3 = Color3.fromRGB(255, 200, 50)
-    shrapnel.ZIndex = 6
-    shrapnel.Parent = LockContainer
-    
-    local randomAngle = math.random(-180, 180)
-    shrapnel.Rotation = randomAngle
-    
-    TweenService:Create(shrapnel, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, math.random(-300, 300), 0.65, math.random(-250, 250)),
-        Rotation = randomAngle + math.random(-180, 180),
-        BackgroundTransparency = 1
-    }):Play()
-    
-    task.wait(1)
-    shrapnel:Destroy()
-end
-
--- Animasi serpihan berhamburan
-task.spawn(function()
-    task.wait(1.5)
-    while ScreenGui.Parent do
-        for i = 1, 3 do
-            createShrapnel()
-            task.wait(0.08)
-        end
-        task.wait(0.25)
-    end
-end)
-
--- Partikel api kecil yang terus menerus
-task.spawn(function()
-    task.wait(1)
-    while ScreenGui.Parent do
-        if math.random(1, 3) == 1 then
-            local ember = Instance.new("Frame")
-            ember.Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6))
-            ember.Position = UDim2.new(0.5, math.random(-100, 100), 0.65, math.random(-80, 80))
-            ember.BorderSizePixel = 0
-            ember.ZIndex = 7
-            ember.Parent = LockContainer
-            
-            local hue = math.random() * 0.15 + 0.05
-            ember.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
-            ember.BackgroundTransparency = 0.2
-            
-            TweenService:Create(ember, TweenInfo.new(0.6), {
-                Position = UDim2.new(0.5, math.random(-200, 200), 0.65, math.random(-150, 150)),
-                BackgroundTransparency = 1
-            }):Play()
-            
-            task.wait(0.6)
-            ember:Destroy()
-        end
-        task.wait(0.08)
-    end
-end)
-
--- ========== TULISAN PLEASE WAIT ==========
-local WaitText = Instance.new("TextLabel")
-WaitText.Size = UDim2.new(1, 0, 0, 55)
-WaitText.Position = UDim2.new(0, 0, 0.8, 0)
-WaitText.BackgroundTransparency = 1
-WaitText.Text = "PLEASE WAIT 1 - 3 MINUTES ,BYPASSING ANTI BAN !"
-WaitText.TextSize = 24
-WaitText.Font = Enum.Font.GothamBold
-WaitText.TextScaled = true
-WaitText.ZIndex = 3
-WaitText.Parent = Background
-
--- Efek RGB berkedip untuk teks peringatan
-task.spawn(function()
-    local hue = 0
-    while ScreenGui.Parent do
-        hue = (hue + 0.015) % 1
-        WaitText.TextColor3 = Color3.fromHSV(hue, 1, 1)
-        local alpha = 0.5 + math.sin(tick() * 6) * 0.5
-        WaitText.TextTransparency = alpha * 0.4
-        task.wait(0.05)
-    end
-end)
-
--- ========== TANDA PERINGATAN ==========
-local WarningText = Instance.new("TextLabel")
-WarningText.Size = UDim2.new(1, 0, 0, 30)
-WarningText.Position = UDim2.new(0, 0, 0.88, 0)
-WarningText.BackgroundTransparency = 1
-WarningText.Text = "⚠ DONT CLOSE YOUR GAME OR THE PROCESS WILL FAIL ⚠"
-WarningText.TextColor3 = Color3.fromRGB(255, 50, 50)
-WarningText.TextSize = 14
-WarningText.Font = Enum.Font.GothamBold
-WarningText.ZIndex = 3
-WarningText.Parent = Background
-
--- Efek kedip peringatan
-task.spawn(function()
-    while ScreenGui.Parent do
-        local blink = math.sin(tick() * 3) > 0
-        if blink then
-            WarningText.TextColor3 = Color3.fromRGB(255, 100, 100)
-        else
-            WarningText.TextColor3 = Color3.fromRGB(100, 0, 0)
-        end
-        task.wait(0.3)
-    end
-end)
-
--- ========== SUBTITLE ==========
-local SubText = Instance.new("TextLabel")
-SubText.Size = UDim2.new(1, 0, 0, 20)
-SubText.Position = UDim2.new(0, 0, 0.94, 0)
-SubText.BackgroundTransparency = 1
-SubText.Text = ">> MYSTRIX PREMIUM ADVANCED SYSTEM ACTIVATED <<"
-SubText.TextColor3 = Color3.fromRGB(150, 150, 150)
-SubText.TextSize = 10
-SubText.Font = Enum.Font.Gotham
-SubText.ZIndex = 3
-SubText.Parent = Background
-
--- Efek mengetik
-task.spawn(function()
-    local dots = ""
-    while ScreenGui.Parent do
-        dots = dots .. "."
-        if #dots > 3 then dots = "" end
-        SubText.Text = ">> MYSTRIX PREMIUM ADVANCED SYSTEM ACTIVATED" .. dots
-        task.wait(0.5)
-    end
-end)
-
--- Efek glitch kecil
-task.spawn(function()
-    while ScreenGui.Parent do
-        if math.random(1, 80) == 1 then
-            local glitch = Instance.new("Frame")
-            glitch.Size = UDim2.new(1, 0, 0, math.random(2, 20))
-            glitch.Position = UDim2.new(0, 0, math.random(), 0)
-            glitch.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-            glitch.BackgroundTransparency = 0.85
-            glitch.BorderSizePixel = 0
-            glitch.ZIndex = 10
-            glitch.Parent = Background
-            
-            task.wait(0.04)
-            glitch:Destroy()
-        end
-        task.wait(0.2)
-    end
-end)
-
-print("[MYSTRIX PREMIUM] Loading screen active - Stuck forever")
+print("[Mystrix Hub] Premium loading screen activated - all bars synchronized")
